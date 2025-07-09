@@ -1,0 +1,29 @@
+{
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "extends": ["airbnb-base"],
+  "plugins": ["import"],
+  "parserOptions": {
+    "ecmaVersion": 12
+  },
+  "rules": {
+    "no-var": "error",                              // Cấm var
+    "prefer-const": "error",                        // Ưu tiên const nếu không gán lại
+    "no-console": "off",                            // Cho phép console.log trong server
+    "no-undef": "error",                            // Báo lỗi biến chưa khai báo
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|err" }], // Cho phép req, res, next
+    "object-curly-newline": ["error", { "multiline": true, "minProperties": 5 }], // Dễ đọc khi object dài
+    "consistent-return": "off",                     // Cho phép không return ở tất cả path
+    "class-methods-use-this": "off",                // Express controller không bắt buộc dùng this
+    "no-underscore-dangle": "off",                  // Cho phép _id của MongoDB
+    "no-param-reassign": ["error", { "props": false }], // Cho phép chỉnh param object
+    "max-len": ["warn", { "code": 120 }],           // Cảnh báo nếu line dài quá 120
+    "prefer-destructuring": "off",                  // Cho phép tùy chọn destructure
+    "no-shadow": "off",                             // Cho phép biến cùng tên trong scope
+    "arrow-body-style": "off",                      // Cho phép arrow function block
+    "import/no-unresolved": "error",                // Check require path đúng
+    "import/named": "error"                         // Check require destructure đúng export
+  }
+}

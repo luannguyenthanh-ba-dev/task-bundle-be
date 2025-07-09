@@ -1,0 +1,4 @@
+node_modules
+logs
+environments/prod.env
+environments/uat.env
