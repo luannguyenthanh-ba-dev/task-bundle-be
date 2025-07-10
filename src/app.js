@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const { ResponseHandler, StatusCodes, requestAPILogger } = require('./utils');
 const { mongoDBConnect } = require('./database');
 const { userRouters } = require('./modules/users/users.routes');
+const { authRouters } = require('./modules/auth/auth.routes');
 
 class Application {
   async initial() {
@@ -20,16 +21,20 @@ class Application {
     app.use(requestAPILogger);
 
     // Health Check
-    app.get('/health', (req, res) => ResponseHandler.success(res, StatusCodes.OK, this.healthCheck()));
+    app.get('/health', (req, res) => {
+      ResponseHandler.success(res, StatusCodes.OK, this.healthCheck());
+    });
 
+    app.use(authRouters);
     app.use(userRouters);
 
     // Global not found handler
     app.use((req, res) => {
-      return ResponseHandler.error(res, StatusCodes.NOT_FOUND, {
-        status: 'error',
-        message: 'Route not found',
-      });
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_FOUND,
+        'Route not found'
+      );
     });
 
     return app;

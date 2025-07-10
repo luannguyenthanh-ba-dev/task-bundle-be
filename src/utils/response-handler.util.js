@@ -10,7 +10,7 @@ class ResponseHandler {
     });
   }
 
-  error(res, statusCode = 500, error = {}, message = 'Unexpected Error!') {
+  error(res, statusCode = 500, message = 'Unexpected Error!', error = {},) {
     return res.status(statusCode).json({
       status: 'error',
       code: statusCode,
