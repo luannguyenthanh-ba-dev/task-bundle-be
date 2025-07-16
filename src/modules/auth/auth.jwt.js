@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
 
-const { logger } = require('../../utils');
+const { logger, env } = require('../../utils');
 
-const jwtSecret = process.env.JWT_SECRET || 'default-secret';
-const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+const jwtSecret = env.JWT_SECRET || 'default-secret';
+const jwtExpiresIn = env.JWT_EXPIRES_IN || '7d';
 const jwtRefreshSecret =
-  process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
-const jwtRefreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '14d';
+  env.JWT_REFRESH_SECRET || 'default-refresh-secret';
+const jwtRefreshExpiresIn = env.JWT_REFRESH_EXPIRES_IN || '14d';
 const jwtAlgorithm = 'HS256';
 
 const generateJWT = (payload = {}) => {
@@ -51,11 +51,11 @@ const verifyJWT = (token = '') => {
     _id: userInfo._id,
     email: userInfo.email,
     name: userInfo.name,
-    phone: userInfo.phone,
-    job: userInfo.job,
-    position: userInfo.position,
-    address: userInfo.address,
-    university: userInfo.university,
+    phone: userInfo.phone || '',
+    job: userInfo.job || '',
+    position: userInfo.position || '',
+    address: userInfo.address || '',
+    university: userInfo.university || '',
     is_verified: userInfo.is_verified,
     created_at: userInfo.created_at,
     updated_at: userInfo.updated_at,

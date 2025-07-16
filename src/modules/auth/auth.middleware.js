@@ -44,7 +44,7 @@ class AuthMiddleware {
           'Not a verified user!!!'
         );
       }
-      req.user = user;
+      req.user = userInfo;
     } catch (error) {
       return ResponseHandler.error(
         res,
@@ -56,7 +56,7 @@ class AuthMiddleware {
     return next();
   }
 
-  async registerValidate(req, res, next) {
+  registerValidate(req, res, next) {
     const data = req.body;
     if (!data || !typeof data === 'object') {
       return ResponseHandler.error(
@@ -91,7 +91,7 @@ class AuthMiddleware {
         'Not have name, or invalid type STRING, or over length 150 chars!'
       );
     }
-    if (!data.phone || !validator.isMobilePhone(data.phone, 'vi-VN')) {
+    if (data.phone && !validator.isMobilePhone(data.phone, 'vi-VN')) {
       errors.push('Phone number must be vi-VN phone!');
     }
 
@@ -110,7 +110,7 @@ class AuthMiddleware {
       data.address &&
       !validator.isLength(data.address, { min: 1, max: 500 })
     ) {
-      errors.push('address max length 500!');
+      errors.push('Address max length 500!');
     }
 
     if (
@@ -132,7 +132,7 @@ class AuthMiddleware {
     return next();
   }
 
-  async verifyUserValidate(req, res, next) {
+  verifyUserValidate(req, res, next) {
     const data = req.body;
     if (!data || !typeof data === 'object') {
       return ResponseHandler.error(
@@ -168,7 +168,7 @@ class AuthMiddleware {
     return next();
   }
 
-  async loginValidate(req, res, next) {
+  loginValidate(req, res, next) {
     const data = req.body;
     if (!data || !typeof data === 'object') {
       return ResponseHandler.error(

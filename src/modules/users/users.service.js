@@ -1,6 +1,7 @@
 const moment = require('moment-timezone');
 
 const { UsersModel } = require('./users.model');
+const { UsersOTPModel } = require('./users-otp.model');
 
 class UsersService {
   async create(data) {
@@ -125,16 +126,143 @@ class UsersService {
       throw new Error('Code is expired!!!');
     }
 
-    const verified = await UsersModel.updateOne(
-      { email },
-      { is_verified: true }
-    );
+    try {
+      const verified = await UsersModel.updateOne(
+        { email },
+        { is_verified: true }
+      );
 
-    if (verified.modifiedCount <= 0) {
-      throw new Error('Verify user failed, Internal Server Error!!!');
+      if (verified.modifiedCount <= 0) {
+        throw new Error('Verify user failed!!!');
+      }
+      return true;
+    } catch (error) {
+      throw new Error(
+        error.message || 'verifyUser met: Internal Server Error!!!'
+      );
     }
+  }
 
-    return true;
+  /**
+   * updateOne: Update user general info
+   * @param {*} _id String
+   * @param {*} data Object
+   * @returns user
+   */
+  async updateOne(_id, data) {
+    const dataUpdate = {};
+    if (data.name) {
+      dataUpdate.name = data.name;
+    }
+    if (data.phone) {
+      dataUpdate.phone = data.phone;
+    }
+    if (data.job) {
+      dataUpdate.job = data.job;
+    }
+    if (data.position) {
+      dataUpdate.position = data.position;
+    }
+    if (data.address) {
+      dataUpdate.address = data.address;
+    }
+    if (data.university) {
+      dataUpdate.university = data.university;
+    }
+    try {
+      const updated = await UsersModel.findByIdAndUpdate(
+        _id,
+        {
+          ...dataUpdate,
+        },
+        { new: true, select: '-password' }
+      );
+
+      return updated;
+    } catch (error) {
+      throw new Error(
+        error.message || 'verifyUser met: Internal Server Error!!!'
+      );
+    }
+  }
+
+  /**
+   * changePassword: Change user password
+   * @param {*} _id String
+   * @param {*} newPassword String
+   * @returns Boolean
+   */
+  async changePassword(_id, newPassword) {
+    try {
+      const changed = await UsersModel.updateOne(
+        { _id },
+        { password: newPassword }
+      );
+
+      if (changed.modifiedCount <= 0) {
+        throw new Error('Verify user failed!!!');
+      }
+      return true;
+    } catch (error) {
+      throw new Error(
+        error.message || 'verifyUser met: Internal Server Error!!!'
+      );
+    }
+  }
+
+  /**
+   * generateOtp: Generate otp to renew password
+   * @param {*} userID String
+   * @returns otp
+   */
+  async generateOtp(userID) {
+    try {
+      const otp = await UsersOTPModel.findOneAndUpdate(
+        { user: userID },
+        {
+          otp: Math.floor(100000 + Math.random() * 900000),
+          ttl: moment().add(15, 'minutes').unix(),
+        },
+        { upsert: true, new: true }
+      );
+      return otp;
+    } catch (error) {
+      throw new Error(
+        error.message || 'generateOtp met: Internal Server Error!!!'
+      );
+    }
+  }
+
+  /**
+   * findOneUserOTP: Find user otp to verify change password
+   * @param {*} userID String
+   * @returns otp
+   */
+  async findOneUserOTP(userID, otp) {
+    try {
+      const rs = await UsersOTPModel.findOne({ user: userID, otp });
+      return rs;
+    } catch (error) {
+      throw new Error(
+        error.message || 'findOneUserOTP met: Internal Server Error!!!'
+      );
+    }
+  }
+
+  /**
+   * removeOTP: After change password with otp -> remove user otp
+   * @param {*} userID String
+   * @returns Boolean
+   */
+  async removeOTP(userID) {
+    try {
+      const otp = await UsersOTPModel.deleteOne({ user: userID });
+      return otp;
+    } catch (error) {
+      throw new Error(
+        error.message || 'removeOTP met: Internal Server Error!!!'
+      );
+    }
   }
 }
 

@@ -1,7 +1,8 @@
 const bcrypt = require('bcrypt');
 const { logger } = require('./logger.util');
+const { env } = require('./environment');
 
-const saltRounds = parseInt(process.env.SALT_ROUNDS || '10', 10);
+const saltRounds = parseInt(env.SALT_ROUNDS || '10', 10);
 
 const hashPassword = async (password = '') => {
   if (!password || password.length === 0) {

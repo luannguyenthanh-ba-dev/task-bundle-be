@@ -6,6 +6,7 @@ const {
   comparePassword,
 } = require('../../utils');
 const { generateJWT, verifyRefreshJWT } = require('./auth.jwt');
+const { sendVerificationEmail } = require('../email/email.service');
 
 class AuthController {
   async register(req, res) {
@@ -25,6 +26,8 @@ class AuthController {
       const user = await UsersService.create(data);
 
       // TODO: Send verification email
+      sendVerificationEmail(user, user.verification.code);
+      //
 
       return ResponseHandler.success(res, StatusCodes.CREATED, {
         success: true,
