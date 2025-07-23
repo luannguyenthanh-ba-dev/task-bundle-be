@@ -6,6 +6,7 @@ const { ResponseHandler, StatusCodes, requestAPILogger } = require('./utils');
 const { mongoDBConnect } = require('./database');
 const { userRouters } = require('./modules/users/users.routes');
 const { authRouters } = require('./modules/auth/auth.routes');
+const { boardRouters } = require('./modules/boards/boards.routes');
 
 class Application {
   async initial() {
@@ -27,6 +28,7 @@ class Application {
 
     app.use(authRouters);
     app.use(userRouters);
+    app.use(boardRouters);
 
     // Global not found handler
     app.use((req, res) => {

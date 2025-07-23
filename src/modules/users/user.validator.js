@@ -4,7 +4,7 @@ const { StatusCodes, ResponseHandler } = require('../../utils');
 class UsersValidator {
   updateMyProfile(req, res, next) {
     const data = req.body;
-    if (!data || !typeof data === 'object') {
+    if (!data || !typeof data === 'object' || Object.keys(data).length === 0) {
       return ResponseHandler.error(
         res,
         StatusCodes.NOT_ACCEPTABLE,
@@ -183,13 +183,9 @@ class UsersValidator {
   }
 
   viewUserGeneralInfo(req, res, next) {
-    const user_id = req.params?.user_id;
+    const userID = req.params?.user_id;
     const errors = [];
-    if (
-      !user_id ||
-      typeof user_id !== 'string' ||
-      !validator.isMongoId(user_id)
-    ) {
+    if (!userID || typeof userID !== 'string' || !validator.isMongoId(userID)) {
       errors.push('Missing or Invalid UserID!');
     }
     if (errors.length > 0) {

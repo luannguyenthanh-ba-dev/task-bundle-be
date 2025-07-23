@@ -4,6 +4,11 @@ const { UsersModel } = require('./users.model');
 const { UsersOTPModel } = require('./users-otp.model');
 
 class UsersService {
+  /**
+   * create: Create new user
+   * @param {*} data Object
+   * @returns user
+   */
   async create(data) {
     try {
       const user = await UsersModel.create({ ...data });
@@ -181,7 +186,7 @@ class UsersService {
       return updated;
     } catch (error) {
       throw new Error(
-        error.message || 'verifyUser met: Internal Server Error!!!'
+        error.message || 'updateOne user met: Internal Server Error!!!'
       );
     }
   }
@@ -205,7 +210,7 @@ class UsersService {
       return true;
     } catch (error) {
       throw new Error(
-        error.message || 'verifyUser met: Internal Server Error!!!'
+        error.message || 'changePassword met: Internal Server Error!!!'
       );
     }
   }

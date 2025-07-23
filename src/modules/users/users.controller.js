@@ -149,10 +149,10 @@ class UsersController {
   }
 
   async viewUserGeneralInfo(req, res) {
-    const user_id = req.params.user_id;
+    const userID = req.params.user_id;
     try {
       const userInfo = await UsersService.findOne({
-        _id: user_id,
+        _id: userID,
       });
       if (!userInfo) {
         return ResponseHandler.error(
