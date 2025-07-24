@@ -52,6 +52,45 @@ class BoardAuthz {
     }
     return next();
   }
+
+  /**
+   * verifyBoardUser: Middleware function check user [ADMIN, MEMBER, VIEWER]
+   * of a board to handle specific feature belong to user [ADMIN, MEMBER, VIEWER]
+   * req.params.board_id -> required
+   */
+  async verifyBoardUser(req, res, next) {
+    const user = req.user;
+    const boardID = req.params?.board_id;
+    if (!boardID || !validator.isMongoId(boardID)) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.FORBIDDEN,
+        'Invalid board ID!!!'
+      );
+    }
+
+    if (!user) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.UNAUTHORIZED,
+        'Unauthorize user to action on board!!!'
+      );
+    }
+    // Check user belong to board
+    const uB = await BoardsService.findOneUsersBoards({
+      user_id: user._id,
+      board_id: boardID,
+      accepted: true,
+    });
+    if (!uB) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.FORBIDDEN,
+        'User is not belong to the board!!!'
+      );
+    }
+    return next();
+  }
 }
 
 module.exports = { BoardAuthz: new BoardAuthz() };

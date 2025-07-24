@@ -28,4 +28,25 @@ router.put(
   BoardsController.updateInfo
 );
 
+router.put(
+  '/v1/boards/:board_id/invite-members',
+  AuthMiddleware.verifyToken,
+  BoardAuthz.verifyBoardAdmin,
+  BoardsValidator.inviteMember,
+  BoardsController.inviteMember
+);
+
+router.get(
+  '/v1/boards/:board_id/accept-invites/:email',
+  BoardsValidator.acceptInvite,
+  BoardsController.acceptInvite
+);
+
+router.get(
+  '/v1/boards/:board_id/members',
+  AuthMiddleware.verifyToken,
+  BoardAuthz.verifyBoardUser,
+  BoardsValidator.getListBoardUsers,
+  BoardsController.getListBoardUsers
+);
 module.exports = { boardRouters: router };

@@ -4,12 +4,12 @@ const { BoardRoles } = require('./boards.const');
 const UsersBoardsSchema = new mongoose.Schema(
   {
     user: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: 'users',
     },
     board: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: 'boards',
     },

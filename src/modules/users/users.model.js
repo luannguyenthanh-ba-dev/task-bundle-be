@@ -22,6 +22,8 @@ const UsersSchema = new mongoose.Schema(
     phone: String,
     job: String,
     position: String,
+    // TODO
+    // avatar: String,
     address: String,
     university: String,
     is_verified: {

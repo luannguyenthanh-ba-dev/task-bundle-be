@@ -1,6 +1,8 @@
 const { ResponseHandler, StatusCodes, logger } = require('../../utils');
 const { BoardRoles } = require('./boards.const');
 const { BoardsService } = require('./boards.service');
+const { UsersService } = require('../users/users.service');
+const { sendInviteToBoardEmail } = require('../email/email.service');
 
 class BoardsController {
   async create(req, res) {
@@ -85,13 +87,163 @@ class BoardsController {
       return ResponseHandler.error(
         res,
         StatusCodes.NOT_ACCEPTABLE,
-        error.message || 'Create new board met Unknown Error!!!'
+        error.message || 'Update board met Unknown Error!!!'
       );
     }
   }
 
   async inviteMember(req, res) {
-    //
+    const data = req.body;
+    const boardID = req.params?.board_id;
+    const user = req.user;
+    try {
+      // Find user
+      const existUser = await UsersService.findOne({
+        email: data.email,
+        is_verified: true,
+      });
+      if (!existUser) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not found verified user to invite to board!!!'
+        );
+      }
+
+      const [existUsersBoards, existBoard] = await Promise.all([
+        BoardsService.findOneUsersBoards({
+          user_id: existUser._id,
+          board_id: boardID,
+        }),
+        BoardsService.findOneBoard({ _id: boardID }),
+      ]);
+      // Check exist board
+      if (!existBoard) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_IMPLEMENTED,
+          'Not found board to invite!!!'
+        );
+      }
+      // Check user already in board
+      if (existUsersBoards) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_IMPLEMENTED,
+          'User already in board, cannot invite to board!!!'
+        );
+      }
+      const invited = await BoardsService.inviteUserToBoard({
+        userID: existUser._id,
+        boardID,
+        role: data.role,
+        accepted: false,
+      });
+
+      // Send invite email
+      const sent = await sendInviteToBoardEmail(
+        existUser,
+        user,
+        existBoard,
+        BoardsService.generateAcceptUrl(boardID, data.email)
+      );
+      // If can not send invite email (include accept url)
+      if (!sent) {
+        // Remove invitation and throw un-expectation error
+        BoardsService.removeUserOfBoard(existUser._id, boardID);
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_IMPLEMENTED,
+          'Can not invite member to board because of email service problem!!!'
+        );
+      }
+      //
+      // TODO: Push notification to member app
+      //
+      logger.info(`Invited user to board: ${JSON.stringify(invited)}`);
+      return ResponseHandler.success(res, StatusCodes.OK, { success: true });
+    } catch (error) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_ACCEPTABLE,
+        error.message || 'Invite member to board met Unknown Error!!!'
+      );
+    }
+  }
+
+  async acceptInvite(req, res) {
+    const boardID = req.params?.board_id;
+    const invitedEmail = req.params?.email;
+    try {
+      const [board, user] = await Promise.all([
+        BoardsService.findOneBoard({ _id: boardID }),
+        UsersService.findOne({ email: invitedEmail, is_verified: true }),
+      ]);
+      if (!board) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not found board, cannot accept invitation!!!'
+        );
+      }
+      if (!user) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not found verified user, cannot accept invitation!!!'
+        );
+      }
+      const existInvitation = await BoardsService.findOneUsersBoards({
+        board_id: boardID,
+        user_id: user._id,
+        accepted: false,
+      });
+      if (!existInvitation) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not found invitation to board of user, cannot accept invitation!!!'
+        );
+      }
+      const accepted = await BoardsService.acceptInvitation(user._id, boardID);
+      if (!accepted) {
+        return ResponseHandler.success(res, StatusCodes.OK, { success: false });
+      }
+      const html = BoardsService.generateSuccessfullyAcceptedUI(board.name);
+      //
+      // TODO: Push notification to admin app
+      //
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(StatusCodes.OK).send(html);
+    } catch (error) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_ACCEPTABLE,
+        error.message || 'Accept invitation to board met Unknown Error!!!'
+      );
+    }
+  }
+
+  async getListBoardUsers(req, res) {
+    const boardID = req.params?.board_id;
+    try {
+      const board = await BoardsService.findOneBoard({ _id: boardID });
+      if (!board) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not found board, cannot get list members of board!!!'
+        );
+      }
+      const members = await BoardsService.getBoardUsersInfo(boardID);
+      return ResponseHandler.success(res, StatusCodes.OK, members);
+    } catch (error) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_ACCEPTABLE,
+        error.message || 'Get list members of board met Unknown Error!!!'
+      );
+    }
   }
 
   async removeMember(req, res) {

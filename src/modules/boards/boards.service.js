@@ -1,6 +1,7 @@
 // const { BoardRoles } = require('./boards.const');
 const { BoardsModel } = require('./boards.model');
 const { UsersBoardsModel } = require('./users-boards.model');
+const { env, logger } = require('../../utils');
 
 class BoardsService {
   /**
@@ -226,6 +227,120 @@ class BoardsService {
     } catch (error) {
       throw new Error(
         error.message || 'updateOneBoardInfo met: Internal Server Error!!!'
+      );
+    }
+  }
+
+  // This solution is just use the sever url to generate accept_url
+  // -> the better solution must be generated from the website url
+  // -> Method PUT -> With logged in account to accept!!!
+  generateAcceptUrl(boardID, invitedEmail) {
+    const url = `${env.SERVER_URL}/boards/${boardID}/accept-invites/${invitedEmail}`;
+    logger.info(`Generate accept url: ${url}`);
+    return url;
+  }
+
+  /**
+   * removeUserOfBoard: Remove a user out of a board
+   * @param {*} userID String
+   * @param {*} boardID String
+   * @returns Boolean
+   */
+  async removeUserOfBoard(userID, boardID) {
+    try {
+      const removed = await UsersBoardsModel.deleteOne({
+        user: userID,
+        board: boardID,
+      });
+      if (removed.deletedCount > 0) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      throw new Error(
+        error.message || 'removeUserOfBoard met: Internal Server Error!!!'
+      );
+    }
+  }
+
+  /**
+   * acceptInvitation: User accept the invitation to a board
+   * @param {*} userID String
+   * @param {*} boardID String
+   * @returns Boolean
+   */
+  async acceptInvitation(userID, boardID) {
+    try {
+      const accepted = await UsersBoardsModel.updateOne(
+        {
+          user: userID,
+          board: boardID,
+        },
+        { accepted: true }
+      );
+      if (accepted.modifiedCount > 0) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      throw new Error(
+        error.message || 'acceptInvitation met: Internal Server Error!!!'
+      );
+    }
+  }
+
+  /**
+   * generateSuccessfullyAcceptedUI: Generate a professional UI accepted invitation
+   * @param {*} BOARD_NAME String
+   * @param {*} LANDING_PAGE_URL String
+   * @returns html
+   */
+  generateSuccessfullyAcceptedUI(
+    BOARD_NAME,
+    LANDING_PAGE_URL = 'https://google.com'
+  ) {
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Invitation Accepted</title>
+      <style>
+        body { font-family: Arial, sans-serif; background: #f2f2f2; text-align: center; padding: 50px; color: #333; }
+        .container { background: #fff; padding: 40px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2D9CDB; }
+        .btn { display: inline-block; margin-top: 30px; padding: 12px 24px; font-size: 16px; text-decoration: none; background: #2D9CDB; color: #fff; border-radius: 5px; }
+        .btn:hover { background: #1b7cb8; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Invitation Accepted!</h1>
+        <p>You have successfully joined the board: <strong>${BOARD_NAME}</strong>.</p>
+        <p>Start collaborating with your team now.</p>
+        <a href="${LANDING_PAGE_URL}" class="btn">Go to TaskBundle</a>
+      </div>
+    </body>
+    </html>
+  `;
+  }
+
+  /**
+   * getBoardUsersInfo: Get all users information of a board
+   * @param {*} boardID String
+   * @returns users
+   */
+  async getBoardUsersInfo(boardID) {
+    try {
+      const usersBoards = await UsersBoardsModel.find({
+        board: boardID,
+      }).populate({ path: 'user', select: '_id email name is_verified' });
+      const result = usersBoards.map((uB) => uB.user);
+      return result;
+    } catch (error) {
+      throw new Error(
+        error.message || 'getBoardMembersInfo met: Internal Server Error!!!'
       );
     }
   }
