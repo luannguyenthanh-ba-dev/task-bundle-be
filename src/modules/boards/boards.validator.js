@@ -236,6 +236,25 @@ class BoardsValidator {
 
     return next();
   }
+
+  leaveBoard(req, res, next) {
+    const boardID = req.params?.board_id;
+    const errors = [];
+    if (!boardID || !validator.isMongoId(boardID)) {
+      errors.push('Missing or Invalid Board!');
+    }
+
+    if (errors.length > 0) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.FORBIDDEN,
+        'Invalid data input!',
+        { data: errors }
+      );
+    }
+
+    return next();
+  }
 }
 
 module.exports = { BoardsValidator: new BoardsValidator() };

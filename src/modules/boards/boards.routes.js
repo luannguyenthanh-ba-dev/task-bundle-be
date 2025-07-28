@@ -65,4 +65,12 @@ router.delete(
   BoardsValidator.removeMember,
   BoardsController.removeMember
 );
+
+router.put(
+  '/v1/boards/:board_id/leavings',
+  AuthMiddleware.verifyToken,
+  BoardAuthz.verifyBoardUser,
+  BoardsValidator.leaveBoard,
+  BoardsController.leaveBoard
+);
 module.exports = { boardRouters: router };

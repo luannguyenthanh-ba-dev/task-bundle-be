@@ -331,11 +331,22 @@ class BoardsController {
   }
 
   async leaveBoard(req, res) {
-    //
+    const boardID = req.params?.board_id;
+    const user = req.user;
+    try {
+      const result = await BoardsService.removeUserOfBoard(user._id, boardID);
+      return ResponseHandler.success(res, StatusCodes.OK, { success: result });
+    } catch (error) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_ACCEPTABLE,
+        error.message || 'Get list members of board met Unknown Error!!!'
+      );
+    }
   }
 
   async closeBoard(req, res) {
-    //
+    // TODO
   }
 
   async viewDetail(req, res) {
