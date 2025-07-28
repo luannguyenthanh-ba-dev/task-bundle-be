@@ -246,11 +246,91 @@ class BoardsController {
     }
   }
 
-  async removeMember(req, res) {
-    //
+  async updateMemberRole(req, res) {
+    const data = req.body;
+    const boardID = req.params?.board_id;
+    try {
+      const existUser = await UsersService.findOne({ email: data.email });
+      if (!existUser) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not found user, cannot update role for member of board!!!'
+        );
+      }
+
+      const existUsersBoards = await BoardsService.findOneUsersBoards({
+        user_id: existUser._id,
+        board_id: boardID,
+      });
+      if (!existUsersBoards) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not a member of board, cannot update role!!!'
+        );
+      }
+      const result = await BoardsService.updateBoardMemberRole(
+        existUser._id,
+        boardID,
+        data.role
+      );
+      return ResponseHandler.success(res, StatusCodes.OK, { success: result });
+    } catch (error) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_ACCEPTABLE,
+        error.message || 'Update members role of board met Unknown Error!!!'
+      );
+    }
   }
 
-  async updateMemberRole(req, res) {
+  async removeMember(req, res) {
+    const boardID = req.params?.board_id;
+    const email = req.params?.email;
+    try {
+      const existUser = await UsersService.findOne({ email });
+      if (!existUser) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not found user, cannot remove member of board!!!'
+        );
+      }
+      const existUsersBoards = await BoardsService.findOneUsersBoards({
+        user_id: existUser._id,
+        board_id: boardID,
+      });
+      if (!existUsersBoards) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_FOUND,
+          'Not a member of board, cannot remove out of board!!!'
+        );
+      }
+      if (existUsersBoards.role === BoardRoles.ADMIN) {
+        return ResponseHandler.error(
+          res,
+          StatusCodes.NOT_ACCEPTABLE,
+          'ADMIN of board, cannot remove out of board!!!'
+        );
+      }
+
+      const result = await BoardsService.removeUserOfBoard(
+        existUser._id,
+        boardID
+      );
+      return ResponseHandler.success(res, StatusCodes.OK, { success: result });
+    } catch (error) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_ACCEPTABLE,
+        error.message || 'Update members role of board met Unknown Error!!!'
+      );
+    }
+  }
+
+  async leaveBoard(req, res) {
     //
   }
 
@@ -259,7 +339,7 @@ class BoardsController {
   }
 
   async viewDetail(req, res) {
-    //
+    // TODO
   }
 }
 

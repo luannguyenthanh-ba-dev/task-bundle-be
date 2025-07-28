@@ -49,4 +49,20 @@ router.get(
   BoardsValidator.getListBoardUsers,
   BoardsController.getListBoardUsers
 );
+
+router.put(
+  '/v1/boards/:board_id/member-roles',
+  AuthMiddleware.verifyToken,
+  BoardAuthz.verifyBoardAdmin,
+  BoardsValidator.updateMemberRole,
+  BoardsController.updateMemberRole
+);
+
+router.delete(
+  '/v1/boards/:board_id/members/:email',
+  AuthMiddleware.verifyToken,
+  BoardAuthz.verifyBoardAdmin,
+  BoardsValidator.removeMember,
+  BoardsController.removeMember
+);
 module.exports = { boardRouters: router };

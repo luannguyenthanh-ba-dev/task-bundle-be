@@ -139,7 +139,7 @@ class BoardsValidator {
     }
 
     if (!data.board_id || !validator.isMongoId(data.board_id)) {
-      errors.push('Missing or invalid board!');
+      errors.push('Missing or Invalid Board!');
     }
 
     if (errors.length > 0) {
@@ -158,7 +158,71 @@ class BoardsValidator {
     const boardID = req.params?.board_id;
     const errors = [];
     if (!boardID || !validator.isMongoId(boardID)) {
-      errors.push('Missing or invalid board!');
+      errors.push('Missing or Invalid Board!');
+    }
+
+    if (errors.length > 0) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.FORBIDDEN,
+        'Invalid data input!',
+        { data: errors }
+      );
+    }
+
+    return next();
+  }
+
+  updateMemberRole(req, res, next) {
+    const boardID = req.params?.board_id;
+    const data = req.body;
+    if (!data || !typeof data === 'object' || Object.keys(data).length === 0) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.NOT_ACCEPTABLE,
+        'Not have data to update role of user in board!!!'
+      );
+    }
+
+    const errors = [];
+    if (!boardID || !validator.isMongoId(boardID)) {
+      errors.push('Missing or Invalid Board!');
+    }
+
+    if (!data.email || !validator.isEmail(data.email)) {
+      errors.push('Missing or Invalid Email!');
+    }
+
+    if (
+      !data.role ||
+      typeof data.role !== 'string' ||
+      !Object.values(BoardRoles).includes(data.role)
+    ) {
+      errors.push('Missing or invalid role of user in board!');
+    }
+
+    if (errors.length > 0) {
+      return ResponseHandler.error(
+        res,
+        StatusCodes.FORBIDDEN,
+        'Invalid data input!',
+        { data: errors }
+      );
+    }
+
+    return next();
+  }
+
+  removeMember(req, res, next) {
+    const boardID = req.params?.board_id;
+    const email = req.params?.email;
+    const errors = [];
+    if (!boardID || !validator.isMongoId(boardID)) {
+      errors.push('Missing or Invalid Board!');
+    }
+
+    if (!email || !validator.isEmail(email)) {
+      errors.push('Missing or Invalid Email!');
     }
 
     if (errors.length > 0) {

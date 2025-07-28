@@ -42,6 +42,7 @@ class BoardAuthz {
       user_id: user._id,
       board_id: boardID,
       role: BoardRoles.ADMIN,
+      accepted: true,
     });
     if (!uB) {
       return ResponseHandler.error(

@@ -344,6 +344,33 @@ class BoardsService {
       );
     }
   }
+
+  /**
+   * updateBoardMemberRole: Update role for a member in a board
+   * @param {*} userID String
+   * @param {*} boardID String
+   * @param {*} role BoardRoles
+   * @returns Boolean
+   */
+  async updateBoardMemberRole(userID, boardID, role) {
+    try {
+      const updated = await UsersBoardsModel.updateOne(
+        {
+          user: userID,
+          board: boardID,
+        },
+        { role }
+      );
+      if (updated.modifiedCount > 0) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      throw new Error(
+        error.message || 'updateBoardMemberRole met: Internal Server Error!!!'
+      );
+    }
+  }
 }
 
 module.exports = { BoardsService: new BoardsService() };
