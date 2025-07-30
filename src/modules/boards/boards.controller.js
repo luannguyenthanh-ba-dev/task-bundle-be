@@ -72,14 +72,6 @@ class BoardsController {
     const data = req.body;
     const boardID = req.params?.board_id;
     try {
-      const board = await BoardsService.findOneBoard({ _id: boardID });
-      if (!board) {
-        ResponseHandler.error(
-          res,
-          StatusCodes.NOT_FOUND,
-          'Not found board to update!!!'
-        );
-      }
       const updated = await BoardsService.updateOneBoardInfo(boardID, data);
 
       return ResponseHandler.success(res, StatusCodes.CREATED, updated);
@@ -96,6 +88,7 @@ class BoardsController {
     const data = req.body;
     const boardID = req.params?.board_id;
     const user = req.user;
+    const board = req.board;
     try {
       // Find user
       const existUser = await UsersService.findOne({
@@ -110,21 +103,10 @@ class BoardsController {
         );
       }
 
-      const [existUsersBoards, existBoard] = await Promise.all([
-        BoardsService.findOneUsersBoards({
-          user_id: existUser._id,
-          board_id: boardID,
-        }),
-        BoardsService.findOneBoard({ _id: boardID }),
-      ]);
-      // Check exist board
-      if (!existBoard) {
-        return ResponseHandler.error(
-          res,
-          StatusCodes.NOT_IMPLEMENTED,
-          'Not found board to invite!!!'
-        );
-      }
+      const existUsersBoards = await BoardsService.findOneUsersBoards({
+        user_id: existUser._id,
+        board_id: boardID,
+      });
       // Check user already in board
       if (existUsersBoards) {
         return ResponseHandler.error(
@@ -144,7 +126,7 @@ class BoardsController {
       const sent = await sendInviteToBoardEmail(
         existUser,
         user,
-        existBoard,
+        board,
         BoardsService.generateAcceptUrl(boardID, data.email)
       );
       // If can not send invite email (include accept url)
@@ -227,14 +209,6 @@ class BoardsController {
   async getListBoardUsers(req, res) {
     const boardID = req.params?.board_id;
     try {
-      const board = await BoardsService.findOneBoard({ _id: boardID });
-      if (!board) {
-        return ResponseHandler.error(
-          res,
-          StatusCodes.NOT_FOUND,
-          'Not found board, cannot get list members of board!!!'
-        );
-      }
       const members = await BoardsService.getBoardUsersInfo(boardID);
       return ResponseHandler.success(res, StatusCodes.OK, members);
     } catch (error) {
@@ -343,6 +317,14 @@ class BoardsController {
         error.message || 'Get list members of board met Unknown Error!!!'
       );
     }
+  }
+
+  async starBoard(req, res) {
+    // TODO
+  }
+
+  async followBoard(req, res) {
+    // TODO
   }
 
   async closeBoard(req, res) {

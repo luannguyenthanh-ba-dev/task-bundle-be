@@ -336,7 +336,10 @@ class BoardsService {
       const usersBoards = await UsersBoardsModel.find({
         board: boardID,
       }).populate({ path: 'user', select: '_id email name is_verified' });
-      const result = usersBoards.map((uB) => uB.user);
+      const result = usersBoards.map((uB) => {
+        const user = JSON.parse(JSON.stringify(uB.user));
+        return { ...user, role: uB.role };
+      });
       return result;
     } catch (error) {
       throw new Error(

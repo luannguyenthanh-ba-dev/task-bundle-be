@@ -45,7 +45,7 @@ router.get(
 router.get(
   '/v1/boards/:board_id/members',
   AuthMiddleware.verifyToken,
-  BoardAuthz.verifyBoardUser,
+  BoardAuthz.verifyBoardGeneralUser,
   BoardsValidator.getListBoardUsers,
   BoardsController.getListBoardUsers
 );
@@ -69,7 +69,7 @@ router.delete(
 router.put(
   '/v1/boards/:board_id/leavings',
   AuthMiddleware.verifyToken,
-  BoardAuthz.verifyBoardUser,
+  BoardAuthz.verifyBoardGeneralUser,
   BoardsValidator.leaveBoard,
   BoardsController.leaveBoard
 );
