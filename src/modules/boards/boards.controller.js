@@ -74,7 +74,7 @@ class BoardsController {
     try {
       const updated = await BoardsService.updateOneBoardInfo(boardID, data);
 
-      return ResponseHandler.success(res, StatusCodes.CREATED, updated);
+      return ResponseHandler.success(res, StatusCodes.OK, updated);
     } catch (error) {
       return ResponseHandler.error(
         res,
@@ -333,6 +333,8 @@ class BoardsController {
 
   async viewDetail(req, res) {
     // TODO
+    // Get board detail info
+    // Get list of list_ids of board
   }
 }
 

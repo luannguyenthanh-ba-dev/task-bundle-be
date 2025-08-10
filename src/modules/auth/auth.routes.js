@@ -1,11 +1,13 @@
 const express = require('express');
 const { AuthController } = require('./auth.controller');
 const { AuthMiddleware } = require('./auth.middleware');
+const { idempotencyInterceptor } = require('../idempotency/idempotency.middleware');
 
 const router = express.Router();
 
 router.post(
   '/v1/auth/registers',
+  idempotencyInterceptor,
   AuthMiddleware.registerValidate,
   AuthController.register
 );
@@ -22,9 +24,6 @@ router.post(
   AuthController.login
 );
 
-router.post(
-  '/v1/auth/refresh-logins',
-  AuthController.refreshLogin
-);
+router.post('/v1/auth/refresh-logins', AuthController.refreshLogin);
 
 module.exports = { authRouters: router };
